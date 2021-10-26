@@ -23,8 +23,8 @@ task("deploy", "Deploy the contract", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
 
   // Check if there are at least two accounts
-  if (accounts.length < 2){
-    console.log("Require at least two accounts. If you are deploying for testnet or mainnet, please update accounts section in hh config!");
+  if (accounts.length < 1) {
+    console.log("Require at least one account. If you are deploying for testnet or mainnet, please update accounts section in hh config!");
     return;
   }
 
@@ -32,21 +32,13 @@ task("deploy", "Deploy the contract", async (taskArgs, hre) => {
   console.log("ℹ️ Deployment Info:");
   const deployer = accounts[0];
   console.log("\t👤Deployer: ", deployer.address);
-  const owner = accounts[1];
-  console.log("\t👤Owner: ", owner.address);
-  
   const BECoin = await hre.ethers.getContractFactory("BECoin");
   const bc = await BECoin.deploy();
 
   console.log("❗️Deploying (it may take time, please do not close the Terminal)...");
   await bc.connect(deployer).deployed();
-  
+
   console.log(`✅BECoin Token Contract deployed:\n\t👤by: ${await bc.signer.getAddress()} \n\t🏠at: ${bc.address}`);
-
-  console.log(`❗️Changing owner to ${owner.address}. Please wait...`);
-  await bc.transferOwnership(owner.address);
-
-  console.log("✅Owner changed to 👤: ", await bc.owner());
 });
 
 // You need to export an object to set up your config
