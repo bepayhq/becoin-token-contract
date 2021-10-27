@@ -9,7 +9,8 @@ import "solidity-coverage";
 import "hardhat-contract-sizer";
 import "hardhat-gas-reporter";
 import { ethers } from "hardhat";
-import { formatEther } from "@ethersproject/units";
+import { formatEther, formatUnits, parseEther } from "@ethersproject/units";
+import { BigNumber } from "@ethersproject/bignumber";
 
 dotenv.config();
 
@@ -24,6 +25,25 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
+task("gasInfo", "Estimate gas price", async (taskArgs, hre) => {
+  const accounts = await hre.ethers.getSigners();
+  const deployer = accounts[0];
+  let deployerBalance = formatEther(await deployer.getBalance());
+  console.log(`${deployer.address}\t ${deployerBalance} ETH`);
+
+  const BECoin = await hre.ethers.getContractFactory("BECoin");
+  const bc = await BECoin.deploy();
+
+  let tx = bc.deployTransaction;
+  
+  let price = tx.gasPrice || BigNumber.from(0);
+  if (price) {
+    let gasPrice = formatUnits(price, "gwei");
+    let gasLimit = tx.gasLimit.toString();
+    let estimatedFundNeeded = formatEther(price.mul(tx.gasLimit));
+    console.log(`Gas price: ${gasPrice} gwei\nGas limit: ${gasLimit}\nEstimated fund needed: ${estimatedFundNeeded}`);
+  }
+});
 
 task("deploy", "Deploy the contract", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -40,11 +60,18 @@ task("deploy", "Deploy the contract", async (taskArgs, hre) => {
   console.log("\t👤Deployer: ", deployer.address);
   const BECoin = await hre.ethers.getContractFactory("BECoin");
   const bc = await BECoin.deploy();
+  let tx = bc.deployTransaction;
+  
+  let price = tx.gasPrice || BigNumber.from(0);
+  if (price) {
+    console.log(`Gas price: ${formatUnits(price, "gwei")} gwei\nGas limit:${tx.gasLimit.toString()}`);
+  }
 
   console.log("❗️Deploying (it may take time, please do not close the Terminal)...");
   await bc.connect(deployer).deployed();
-
-  console.log(`✅BECoin Token Contract deployed:\n\t👤by: ${await bc.signer.getAddress()} \n\t🏠at: ${bc.address}`);
+  let receipt = await tx.wait(tx.confirmations);
+  let cost = formatEther(price.mul(receipt.gasUsed));
+  console.log(`✅BECoin Token Contract deployed (cost: ${cost} ETH):\n\t👤by: ${await bc.signer.getAddress()} \n\t🏠at: ${bc.address}`);
 });
 
 // You need to export an object to set up your config
@@ -64,10 +91,12 @@ const config: HardhatUserConfig = {
     testnet: {
       url: process.env.TESTNET_URL || "",
       accounts:[process.env.DEPLOYER_PRIVATE_KEY || "", process.env.TOKEN_OWNER_PRIVATE_KEY || ""],
+      gas: "auto",
     },
     mainnet: {
       url: process.env.MAINNET_URL || "",
       accounts:[process.env.DEPLOYER_PRIVATE_KEY || "", process.env.TOKEN_OWNER_PRIVATE_KEY || ""],
+      gas: "auto",
     },
   },
   gasReporter: {
