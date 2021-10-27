@@ -62,7 +62,7 @@ describe("beCoin", async function () {
     .to.be.revertedWith("ERC20Capped: cap exceeded");
   });
 
-  it("Should pause transfers", async function () {
+  it("Should transfer tokens", async function () {
     let bc = await deployBeCoin();
     let initialMintAmount = token2fraction(1000); // 1000 tokens
     let owner = await bc.owner();
@@ -75,6 +75,20 @@ describe("beCoin", async function () {
 
     await expect(bc.transfer(account1.address, token2fraction(100)))
           .to.be.revertedWith("Pausable: paused");
+  });
+
+
+  it("Should pause transfers", async function () {
+    let bc = await deployBeCoin();
+    let initialMintAmount = token2fraction(1000); // 1000 tokens
+    let owner = await bc.owner();
+    await bc.mint(owner, initialMintAmount);
+
+    const accounts = await ethers.getSigners();
+    let account1 = accounts[1];
+    const transferAmount = token2fraction(500);
+    await expect(bc.transfer(account1.address, transferAmount))
+          .to.be.emit(bc, "Transfer").withArgs(owner, account1.address, transferAmount);
   });
 
 });
