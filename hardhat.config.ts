@@ -8,6 +8,8 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-contract-sizer";
 import "hardhat-gas-reporter";
+import { ethers } from "hardhat";
+import { formatEther } from "@ethersproject/units";
 
 dotenv.config();
 
@@ -17,7 +19,8 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
 
   for (const account of accounts) {
-    console.log(account.address);
+    let balance = await account.getBalance();
+    console.log(`${account.address}\t${formatEther(balance)} ETH`);
   }
 });
 
