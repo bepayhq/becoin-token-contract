@@ -91,12 +91,10 @@ const config: HardhatUserConfig = {
     testnet: {
       url: process.env.TESTNET_URL || "",
       accounts:[process.env.DEPLOYER_PRIVATE_KEY || "", process.env.TOKEN_OWNER_PRIVATE_KEY || ""],
-      gas: "auto",
     },
     mainnet: {
       url: process.env.MAINNET_URL || "",
       accounts:[process.env.DEPLOYER_PRIVATE_KEY || "", process.env.TOKEN_OWNER_PRIVATE_KEY || ""],
-      gas: "auto",
     },
   },
   gasReporter: {
