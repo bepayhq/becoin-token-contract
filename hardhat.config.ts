@@ -41,7 +41,7 @@ task("gasInfo", "Estimate gas price", async (taskArgs, hre) => {
     let gasPrice = formatUnits(price, "gwei");
     let gasLimit = tx.gasLimit.toString();
     let estimatedFundNeeded = formatEther(price.mul(tx.gasLimit));
-    console.log(`Gas price: ${gasPrice} gwei\nGas limit: ${gasLimit}\nEstimated fund needed: ${estimatedFundNeeded}`);
+    console.log(`Gas price: ${gasPrice} gwei\nGas limit: ${gasLimit}\nEstimated fund needed: ${estimatedFundNeeded} ETH`);
   }
 });
 
